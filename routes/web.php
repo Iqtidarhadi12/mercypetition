@@ -1,8 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\HomeDepartmentController;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,17 +14,28 @@ use App\Http\Controllers\HomeDepartmentController;
 |
 */
 
-// Route::get('/', function () {
-//     return view('welcome');
-// });
-Route:: get('dashboard', [AdminController::class,'index'])->name('superdashboard')->middleware('Admin');
+Route::middleware('web')->group(base_path('routes/portal.php'));
 
-Route:: get('HomeDepartment', [HomeDepartmentController::class,'HomeDepartment'])->name('HomeDepartment')->middleware('HomeDepartment');
-Route:: get('/', [AdminController::class,'login'])->name('adminlogin');
-Route::post('/captcha-validation', [App\Http\Controllers\HomeController::class, 'capthcaFormValidate']);
-Route::get('/reload-captcha', [App\Http\Controllers\HomeController::class, 'reloadCaptcha']);
-Route::Post('/logine', [App\Http\Controllers\HomeController::class, 'login'])->name('atempuser');
-Route::get('/logout', [App\Http\Controllers\HomeController::class, 'logout'])->name('logout');
+
+Route::get('/', function () {
+    return view('auth.login');
+});
+
+Route::get('/reload-captcha','HomeController@reloadCaptcha')->name('reloadCaptcha');
+
+Route::get('/dashboard', function () {
+    return view('welcome');
+})->name('portal.dashboard');
+Route::get('logout','Auth\loginController@logout')->name('logout');
 Auth::routes();
+Route::get('/home', 'HomeController@index')->name('home');
+Route::group(['middleware' => ['auth']], function() {
+    Route::resource('roles','RoleController');
+    Route::resource('Petition','PetitionController');
+    Route::resource('roles','RoleController');
+    Route::resource('users','UserController');
+    Route::resource('permissions','PermissionController');
+    Route::resource('homedept','HomeDepartmentController');
+    Route::resource('InteriorMinstry','InteriorMinstryController');
+});
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
